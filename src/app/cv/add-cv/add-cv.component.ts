@@ -9,6 +9,9 @@ import { Router } from "@angular/router";
 import { ToastrService } from "ngx-toastr";
 import { APP_ROUTES } from "src/config/routes.config";
 import { Cv } from "../model/cv";
+import { FormDataService } from "src/app/services/form-data/form-data.service";
+import { FormData } from "src/app/services/form-data/form-data.model";
+import { debounceTime, distinctUntilChanged } from "rxjs";
 
 @Component({
   selector: "app-add-cv",
@@ -20,15 +23,28 @@ export class AddCvComponent implements OnInit {
     private cvService: CvService,
     private router: Router,
     private toastr: ToastrService,
-    private formBuilder: FormBuilder
-  ) {}
+    private formBuilder: FormBuilder,
+    private formDataService: FormDataService
+  ) { }
 
   ngOnInit() {
+    const formData = this.formDataService.getFormData();
+    if (formData) {
+      this.form.patchValue(formData);
+    }
+
+    this.form.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe((data) => {
+      this.formDataService.setFormData(data as FormData);
+    });
+
     this.form.get('age')?.valueChanges.subscribe((age) => {
       if (age && age < 18) {
-        this.form.get('path')?.disable(); 
+        this.form.get('path')?.disable();
       } else {
-        this.form.get('path')?.enable(); 
+        this.form.get('path')?.enable();
       }
     });
   }
@@ -66,6 +82,7 @@ export class AddCvComponent implements OnInit {
         );
       },
     });
+    this.formDataService.clearFormData();
   }
 
   get name(): AbstractControl {
