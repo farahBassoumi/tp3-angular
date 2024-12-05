@@ -20,7 +20,9 @@ const routes: Route[] = [
     path: "cv",
     component: CvComponent,
   },
-  { path: "cv/add", component: AddCvComponent, canActivate: [AuthGuard] },
+  // { path: "cv/add", component: AddCvComponent, canActivate: [AuthGuard] },
+  { path: "cv/add", component: AddCvComponent},
+
   { path: "cv/:id", component: DetailsCvComponent },
   {
     path: "",

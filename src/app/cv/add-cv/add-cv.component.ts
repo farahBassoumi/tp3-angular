@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import {
   AbstractControl,
   FormBuilder,
@@ -15,13 +15,23 @@ import { Cv } from "../model/cv";
   templateUrl: "./add-cv.component.html",
   styleUrls: ["./add-cv.component.css"],
 })
-export class AddCvComponent {
+export class AddCvComponent implements OnInit {
   constructor(
     private cvService: CvService,
     private router: Router,
     private toastr: ToastrService,
     private formBuilder: FormBuilder
   ) {}
+
+  ngOnInit() {
+    this.form.get('age')?.valueChanges.subscribe((age) => {
+      if (age && age < 18) {
+        this.form.get('path')?.disable(); 
+      } else {
+        this.form.get('path')?.enable(); 
+      }
+    });
+  }
 
   form = this.formBuilder.group(
     {
