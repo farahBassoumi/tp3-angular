@@ -10,8 +10,36 @@
   </div>
   Firstname:
   <input type="text" class="form-control" formControlName="firstname" /> Age:
-  <input type="text" class="form-control" formControlName="age" /> Cin:
+  <input type="text" class="form-control" formControlName="age" />
+  <div
+  *ngIf="
+    form.get('cin')?.hasError('cinAge') &&
+    form.get('cin')?.touched
+  "
+  class="alert alert-danger"
+>
+  Cet age no correspond pas a votre CIN
+</div>
+   Cin:
   <input type="text" class="form-control" formControlName="cin" />
+  <div
+  *ngIf="
+    form.get('cin')?.hasError('cinAge') &&
+    form.get('cin')?.touched
+  "
+  class="alert alert-danger"
+>
+  cette Cin ne correspond a votre age
+</div>
+  <div
+  *ngIf="
+    form.get('cin')?.hasError('cinExist') &&
+    form.get('cin')?.touched
+  "
+  class="alert alert-danger"
+>
+  Cette CIN existe déjà
+</div>
   <div
     *ngIf="
       form.errors && form.errors['cinFirstCars'] && cin?.touched && age?.touched

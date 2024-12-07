@@ -11,7 +11,7 @@ import { APP_ROUTES } from "src/config/routes.config";
 import { Cv } from "../model/cv";
 import { FormDataService } from "src/app/services/form-data/form-data.service";
 import { FormData } from "src/app/services/form-data/form-data.model";
-import { debounceTime, distinctUntilChanged } from "rxjs";
+import { combineLatest, debounceTime, distinctUntilChanged, of, switchMap, tap } from "rxjs";
 
 @Component({
   selector: "app-add-cv",
@@ -47,7 +47,47 @@ export class AddCvComponent implements OnInit {
         this.form.get('path')?.enable();
       }
     });
+
+
+    this.listenOnCinChanges();
+
+    this.listenOnCinAgeChanges();
+
+
+    // this.form.get('cin')?.valueChanges.pipe(
+    //   debounceTime(500),
+    //   distinctUntilChanged(),
+    //   switchMap((cin: string | null) => {
+    //     if (cin) {
+    //       console.log('Searching for CV with cin:', cin);
+    //       return this.cvService.getCvById(Number(cin)); 
+    //     }
+    //     return of([]);// this will block the flow in case of an error
+    //   })
+    // ).subscribe({
+    //   next: (cv: any) => {
+    //     if (cv) {
+    //       this.form.get('cin')?.setErrors({ cinExist: true });
+    //       console.log('CV found:', cv);
+    //     } else {
+    //       this.form.get('cin')?.setErrors(null);
+    //       console.log('CV not found');
+    //     }
+    //   },
+    //   error: (err) => {
+    //     console.error('Error while searching for CV:', err);
+    //   }
+    // });
+
+
+
+
+
+
+
+
   }
+
 
   form = this.formBuilder.group(
     {
@@ -69,6 +109,56 @@ export class AddCvComponent implements OnInit {
       ],
     },
   );
+  
+  listenOnCinAgeChanges() {
+    combineLatest([
+      this.form.get('cin')?.valueChanges.pipe(debounceTime(500))!,
+      this.form.get('age')?.valueChanges.pipe(debounceTime(500))!,
+    ]).subscribe(([cin, age]) => {
+      const Cinnumber = Number(cin?.slice(0, 2));
+      if (age && age >= 60) {
+        if (Cinnumber >= 0 && Cinnumber < 20) {
+          this.form.get('cin')?.setErrors(null);
+        }
+        else {
+          this.form.get('cin')?.setErrors({ cinAge: true });
+        }
+      } else {
+        if (Cinnumber >= 20) {
+          this.form.get('cin')?.setErrors(null);
+        }
+        else {
+          this.form.get('cin')?.setErrors({ cinAge: true });
+        }
+      }
+    })
+  }
+
+  listenOnCinChanges() {
+    this.form.get('cin')?.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+    ).subscribe((cin: string | null) => {
+      console.log('CIN field changed to:', cin);
+      this.cvService.getCvById(Number(cin)).subscribe({
+        next: (cv: any) => {
+          if (cv) {
+            this.form.get('cin')?.setErrors({ cinExist: true });
+            console.log('CV found:', cv);
+          } else {
+            this.form.get('cin')?.setErrors(null);
+            console.log('CV not found');
+          }
+        },
+        error: (err) => {
+          console.error('Error while searching for CV:', err);
+        }
+      });
+    });
+  }
+
+
+
 
   addCv() {
     this.cvService.addCv(this.form.value as Cv).subscribe({
