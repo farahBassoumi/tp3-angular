@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { faker } from '@faker-js/faker';
 export interface User {
   name: string,
@@ -10,7 +10,7 @@ export interface User {
 })
 export class UsersService {
   users: User [] = [];
-  constructor() {
+  constructor(private ngZone: NgZone) {
     for (let i = 0; i<50; i++)
       this.users.push({
         name: faker.name.fullName(),
@@ -20,10 +20,18 @@ export class UsersService {
   getOddOrEven(isOdd = false): User[] {
     return this.users.filter((user) => !!(user.age % 2) == isOdd );
   }
+  
+  //1. Zone Pollution Pattern
   addUser(list: User[], name: string) {
-    list.unshift({
-      name,
-      age: faker.datatype.number({min: 18, max: 30})
+    this.ngZone.runOutsideAngular(() => {
+      list.unshift({
+        name,
+        age: faker.datatype.number({ min: 18, max: 30 }),
+      });
+      this.ngZone.run(() => {
+        console.log('Utilisateur ajouté sans perturber Angular.');
+      });
     });
   }
+  
 }

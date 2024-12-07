@@ -1,10 +1,12 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {User, UsersService} from "../users.service";
 import * as ChartJs from 'chart.js/auto';
 @Component({
   selector: 'app-rh',
   templateUrl: './rh.component.html',
-  styleUrls: ['./rh.component.css']
+  styleUrls: ['./rh.component.css'],
+  //3. OnPush Stratégie
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RhComponent implements OnInit {
   oddUsers: User[];
@@ -21,10 +23,14 @@ export class RhComponent implements OnInit {
   addUser(list: User[], newUser: string) {
     this.userService.addUser(list, newUser);
   }
+  
+  //4. Recalculation of Referentially Transparent Expressions
   createChart(){
+    const oddUsersLength = this.oddUsers.length;
+    const evenUsersLength = this.evenUsers.length;
     const data = [
-      { users: 'Workers', count: this.oddUsers.length },
-      { users: 'Boss', count: this.evenUsers.length },
+      { users: 'Workers', count: oddUsersLength },
+      { users: 'Boss', count: evenUsersLength },
     ];
     this.chart = new ChartJs.Chart("MyChart",
     {
